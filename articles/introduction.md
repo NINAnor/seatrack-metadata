@@ -46,7 +46,7 @@ path_to_seatrack <- file.path("a_filepath", "SEATRACK - shared")
 set_sea_track_folder(path_to_seatrack)
 ```
 
-    #> INFO [2026-06-18 10:21:47] Sea track folder set to: /tmp/RtmpibjvJv/seatrack_vignette_2c127fe5334d/SEATRACK - shared
+    #> INFO [2026-07-07 14:13:04] Sea track folder set to: /tmp/RtmpcBvC15/seatrack_vignette_2cb165d82915/SEATRACK - shared
 
 ## Loading data
 
@@ -79,8 +79,8 @@ done by using the colony name.
 ``` r
 
 master_import <- load_master_import("TestColony")
-#> INFO [2026-06-18 10:21:48] Get Master import file for colony 'TestColony', use existing paths: TRUE
-#> INFO [2026-06-18 10:21:48] Master import file for colony 'TestColony' found at: /tmp/RtmpibjvJv/seatrack_vignette_2c127fe5334d/SEATRACK - shared/Database/Imports_Metadata/imports_TestColony_2025.xlsx
+#> INFO [2026-07-07 14:13:05] Get Master import file for colony 'TestColony', use existing paths: TRUE
+#> INFO [2026-07-07 14:13:05] Master import file for colony 'TestColony' found at: /tmp/RtmpcBvC15/seatrack_vignette_2cb165d82915/SEATRACK - shared/Database/Imports_Metadata/imports_TestColony_2025.xlsx
 ```
 
 The function returns a class with two elements, `data` and `wb`. `wb` is
@@ -109,10 +109,10 @@ checking startup files for missing logger sessions.
 
 updated_startup <- add_loggers_from_startup(master_import, partner_data)
 #> ## seatrackR is up to date.
-#> WARN [2026-06-18 10:21:48] No database connection from which to get models
-#> INFO [2026-06-18 10:21:48] Logger ID L1 was retrieved on 2025-01-10 but no startup was added. 
+#> WARN [2026-07-07 14:13:05] No database connection from which to get models
+#> INFO [2026-07-07 14:13:05] Logger ID L1 was retrieved on 2025-01-10 but no startup was added. 
 #> This falls into a single open session started on 2024-01-01 . The retrieval may belong to this open session
-#> SUCCESS [2026-06-18 10:21:48] Adding 0 new loggers from startup files
+#> SUCCESS [2026-07-07 14:13:05] Adding 0 new loggers from startup files
 ```
 
 Then appending reported encounter data.
@@ -123,7 +123,7 @@ updated_metadata <- append_encounter_data(
   master_import$data$METADATA,
   partner_data$data$`ENCOUNTER DATA`
 )
-#> SUCCESS [2026-06-18 10:21:48] Appended 1 rows to master metadata. New total is 2 rows.
+#> SUCCESS [2026-07-07 14:13:05] Appended 1 rows to master metadata. New total is 2 rows.
 ```
 
 Finally the processing reported logger returns and attempts to update
@@ -143,12 +143,12 @@ updated_sessions <- handle_returned_loggers(
   partner_data$data$`LOGGER RETURNS`,
   partner_data$data$`RESTART TIMES`,
 )
-#> SUCCESS [2026-06-18 10:21:48] Found unfinished session for logger ID: L1 2025-01-10
-#> SUCCESS [2026-06-18 10:21:48] Unfinished session:
+#> SUCCESS [2026-07-07 14:13:05] Found unfinished session for logger ID: L1 2025-01-10
+#> SUCCESS [2026-07-07 14:13:05] Unfinished session:
 #>   logger_serial_no starttime_gmt       intended_species intended_location
 #> 1 L1               2024-01-01 00:00:00 bird             TestColony       
-#> SUCCESS [2026-06-18 10:21:48] Updated 1 sessions.
-#> SUCCESS [2026-06-18 10:21:48] Updated sessions:
+#> SUCCESS [2026-07-07 14:13:05] Updated 1 sessions.
+#> SUCCESS [2026-07-07 14:13:05] Updated sessions:
 #>   logger_serial_no starttime_gmt       download_type download_date
 #> 1 L1               2024-01-01 00:00:00 Downloaded    2025-01-10
 ```
@@ -173,27 +173,27 @@ new_sheets <- handle_partner_metadata(
   partner_data,
   master_import
 )
-#> INFO [2026-06-18 10:21:48] Handle partner metadata /tmp/RtmpibjvJv/seatrack_vignette_2c127fe5334d/Metadata_SEATRACK_2025-TestColony.xlsx 
-#> for TestColony /tmp/RtmpibjvJv/seatrack_vignette_2c127fe5334d/SEATRACK - shared/Database/Imports_Metadata/imports_TestColony_2025.xlsx
-#> INFO [2026-06-18 10:21:48] Add missing sessions from start up files
-#> WARN [2026-06-18 10:21:48] No database connection from which to get models
-#> INFO [2026-06-18 10:21:48] Logger ID L1 was retrieved on 2025-01-10 but no startup was added. 
+#> INFO [2026-07-07 14:13:05] Handle partner metadata /tmp/RtmpcBvC15/seatrack_vignette_2cb165d82915/Metadata_SEATRACK_2025-TestColony.xlsx 
+#> for TestColony /tmp/RtmpcBvC15/seatrack_vignette_2cb165d82915/SEATRACK - shared/Database/Imports_Metadata/imports_TestColony_2025.xlsx
+#> INFO [2026-07-07 14:13:05] Add missing sessions from start up files
+#> WARN [2026-07-07 14:13:05] No database connection from which to get models
+#> INFO [2026-07-07 14:13:05] Logger ID L1 was retrieved on 2025-01-10 but no startup was added. 
 #> This falls into a single open session started on 2024-01-01 . The retrieval may belong to this open session
-#> SUCCESS [2026-06-18 10:21:48] Adding 0 new loggers from startup files
-#> INFO [2026-06-18 10:21:48] Check for duplicate sessions
-#> INFO [2026-06-18 10:21:48] Append encounter data
-#> SUCCESS [2026-06-18 10:21:48] Appended 1 rows to master metadata. New total is 2 rows.
-#> INFO [2026-06-18 10:21:48] Update sessions from logger returns
-#> SUCCESS [2026-06-18 10:21:48] Found unfinished session for logger ID: L1 2025-01-10
-#> SUCCESS [2026-06-18 10:21:48] Unfinished session:
+#> SUCCESS [2026-07-07 14:13:05] Adding 0 new loggers from startup files
+#> INFO [2026-07-07 14:13:05] Check for duplicate sessions
+#> INFO [2026-07-07 14:13:05] Append encounter data
+#> SUCCESS [2026-07-07 14:13:05] Appended 1 rows to master metadata. New total is 2 rows.
+#> INFO [2026-07-07 14:13:05] Update sessions from logger returns
+#> SUCCESS [2026-07-07 14:13:05] Found unfinished session for logger ID: L1 2025-01-10
+#> SUCCESS [2026-07-07 14:13:05] Unfinished session:
 #>   logger_serial_no starttime_gmt       intended_species intended_location
 #> 1 L1               2024-01-01 00:00:00 bird             TestColony       
-#> SUCCESS [2026-06-18 10:21:48] Updated 1 sessions.
-#> SUCCESS [2026-06-18 10:21:48] Updated sessions:
+#> SUCCESS [2026-07-07 14:13:05] Updated 1 sessions.
+#> SUCCESS [2026-07-07 14:13:05] Updated sessions:
 #>   logger_serial_no starttime_gmt       download_type download_date
 #> 1 L1               2024-01-01 00:00:00 Downloaded    2025-01-10   
-#> INFO [2026-06-18 10:21:48] Finished handling partner metadata /tmp/RtmpibjvJv/seatrack_vignette_2c127fe5334d/Metadata_SEATRACK_2025-TestColony.xlsx 
-#> for TestColony /tmp/RtmpibjvJv/seatrack_vignette_2c127fe5334d/SEATRACK - shared/Database/Imports_Metadata/imports_TestColony_2025.xlsx
+#> INFO [2026-07-07 14:13:05] Finished handling partner metadata /tmp/RtmpcBvC15/seatrack_vignette_2cb165d82915/Metadata_SEATRACK_2025-TestColony.xlsx 
+#> for TestColony /tmp/RtmpcBvC15/seatrack_vignette_2cb165d82915/SEATRACK - shared/Database/Imports_Metadata/imports_TestColony_2025.xlsx
 new_master_sheets <- new_sheets$master_import
 ```
 
