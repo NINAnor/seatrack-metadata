@@ -130,7 +130,7 @@ check_startups_active_db <- function(startup_shutdown, filter_startups = FALSE) 
         if (filter_startups) {
             log_warn("Sessions being removed:")
         }
-        log_warn("Sesssions :\n", paste(capture.output(print(active_summary, n = nrow(active_summary)))[c(-1, -3)], collapse = "\n"))
+        log_warn("Sessions :\n", paste(capture.output(print(active_summary, n = nrow(active_summary)))[c(-1, -3)], collapse = "\n"))
     }
     if (filter_startups) {
         startup_shutdown <- startup_shutdown[active_session_bool_all_ids, ]

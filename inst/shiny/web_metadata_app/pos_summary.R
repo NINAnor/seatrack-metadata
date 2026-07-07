@@ -34,8 +34,6 @@ pos_summary_server <- function(id, pos, pos_data_last_modification, log, species
         # Set inputs
         updateSelectInput(inputId = "species_logger", choices = c("all species", species_df$eng))
 
-
-
         output$last_updated <- renderUI(p(HTML(paste("Last updated:", as.Date(pos_data_last_modification)))))
 
         title_string <- ""
@@ -46,6 +44,9 @@ pos_summary_server <- function(id, pos, pos_data_last_modification, log, species
         } else if (logger_type == "GPS") {
             title_string <- "Amount of GPS logger deployed and retrieved each year on all SEATRACK species"
             instruction_string <- "Below, you can select a species to investigate how much GPS logger tracking data (as # of tracks in database/year) is available at each location and year."
+        }else if (logger_type == "IRMA") {
+            title_string <- "Amount of light-level geolocator tracks augmented with IRMA (Informed Random Movement Algorithm)"
+            instruction_string <- "Below, you can select a species to investigate how much geolocator tracking data is augmented with IRMA (as # of tracks in database/year) is available at each location and year."
         }
 
         output$title <- renderUI(p(title_string))
@@ -53,7 +54,12 @@ pos_summary_server <- function(id, pos, pos_data_last_modification, log, species
         output$instruction <- renderUI(p(instruction_string))
 
         output$plot_overall <- renderPlot({
-            x <- log[log$data == logger_type, ]
+            if(logger_type == "IRMA"){
+                x <- log[log$session_id %in% pos$session_id[pos$data == logger_type], ]
+            }else{
+                x <- log[log$data == logger_type, ]
+            }
+            
             if (input$age_overall == "adults") x <- x[x$status_age == "adult", ]
             if (input$age_overall == "juveniles") x <- x[x$status_age == "juvenile", ]
 

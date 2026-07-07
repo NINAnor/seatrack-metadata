@@ -31,6 +31,10 @@ main_ui <- function(id) {
             pos_summary_ui(ns("gps_summary"))
         ),
         tabPanel(
+            "IRMA summary",
+            pos_summary_ui(ns("irma_summary"))
+        ),
+        tabPanel(
             "Sex",
             sex_summary_ui(ns("sex_summary"))
         ),

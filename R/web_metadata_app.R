@@ -25,8 +25,8 @@ get_web_metadata_data <- function() {
     )
     latin_species <- c(
         "Larus argentatus", "Larus fuscus", "Larus hyperboreus",
-        "Fulmarus_glacialis", "Morus bassanus", "Rissa_tridactyla", "Stercorarius_skua", "Sterna paradisaea", "Hydrobates_leucorhous",
-        "Alca_torda", "Fratercula_arctica", "Uria_aalge", "Uria_lomvia", "Alle_alle",
+        "Fulmarus glacialis", "Morus bassanus", "Rissa_tridactyla", "Stercorarius_skua", "Sterna paradisaea", "Hydrobates_leucorhous",
+        "Alca_torda", "Fratercula_arctica", "Uria aalge", "Uria lomvia", "Alle alle",
         "Gulosus aristotelis", "Somateria mollissima"
     )
     ind <- seatrackR::getIndividInfo(species = SEATRACK_species, age_at_deployment = NULL)
@@ -36,7 +36,7 @@ get_web_metadata_data <- function() {
 
     # available individual data -----------------------------------------------
     # all sessions where birds were tagged as pullus
-    pul <- ind[ind$status_age %in% c("pullus", "chick") & ind$eventType %in% "Deployment", ]
+    pul <- ind[ind$status_age %in% c("pullus", "chick", "juvenile", "1") & ind$eventType %in% "Deployment", ]
 
     ind_sub <- ind[!is.na(ind$eventType), ]
     ind_sub$status_year <- as.numeric(strftime(ind_sub$status_date, "%Y"))
@@ -52,7 +52,7 @@ get_web_metadata_data <- function() {
     ind_sub$data[ind_sub$session_id %in% GPS_sessions] <- "GPS"
 
     readr::write_excel_csv(
-        ind_sub[, c("species", "colony", "ring_number", "eventType", "status_year", "status_age", "known_age", "status_sex", "year_tracked", "data")],
+        ind_sub[, c("species", "colony", "ring_number", "eventType", "status_year", "status_age", "known_age", "status_sex", "year_tracked", "data", "session_id")],
         file.path(system.file("shiny/web_metadata_app/data", package = "seatrackRtools"), "SEATRACK database individual event data.csv")
     )
 
@@ -66,7 +66,7 @@ get_web_metadata_data <- function() {
     readr::write_excel_csv(
         sex[, c(
             "species", "colony", "status_sex", "status_sexing_method",
-            "status_age", "known_age", "ring_number", "latest_info_date"
+            "status_age", "known_age", "ring_number", "latest_info_date", "session_id"
         )],
         file.path(system.file("shiny/web_metadata_app/data", package = "seatrackRtools"), "SEATRACK database individual sexing data.csv")
     )
@@ -131,15 +131,64 @@ get_web_metadata_data <- function() {
             sep = "/"
         )
 
-        sub_pos <- pos[!duplicated(paste(pos$individ_id, pos$year, pos$month)), ]
+        sub_pos <- pos[!duplicated(paste(pos$session_id, pos$year, pos$month)), ]
 
         sub_pos$data <- "GLS"
         sub_pos$data[sub_pos$session_id %in% GPS_sessions] <- "GPS"
 
         # sub_pos$id <- paste(sub_pos$individ_id, sub_pos$logger_id)
         sub_pos <- merge(sub_pos, ind_sub[ind_sub$eventType == "Deployment", c("session_id", "status_age")], by = "session_id", all.x = TRUE)
-        sub_pos <- sub_pos[!duplicated(paste(sub_pos$individ_id, sub_pos$winter)), c("colony", "winter", "species", "status_age", "data")]
+        sub_pos <- sub_pos[!duplicated(paste(sub_pos$session_id, sub_pos$winter)), c("colony", "winter", "species", "status_age", "data", "session_id")]
+
         if (sp == SEATRACK_species[1]) pos_sum <- sub_pos else pos_sum <- rbind(pos_sum, sub_pos)
+    }
+
+    # IRMA summary
+    irma_species <- data.frame(
+        full_name = c(
+            "Little auk", "Atlantic puffin", "Northern fulmar",
+            "Black-legged kittiwake", "Common guillemot", "Brünnich's guillemot", "Leach's storm petrel"
+        ),
+        latin_name = c("Alle_alle", "Fratercula_arctica", "Fulmarus_glacialis", "Rissa_tridactyla", "Uria_aalge", "Uria_lomvia", "Hydrobates_leucorhous"),
+        acronym = c("ALALL", "FRARC", "FUGLA", "RITRI", "URAAL", "URLOM", "HYLEU")
+    )
+    irma_release <- "20241120"
+    irma_version <- "v3.1"
+
+    irma_dir <- file.path(the$sea_track_folder, "Data", "Data products", "IRMA_data")
+    all_irma_files <- list.files(path = irma_dir, pattern = paste0(irma_release, "_", gsub(".", "\\.", irma_version, fixed = TRUE), ".*", "\\.rds$"), recursive = TRUE)
+
+    for (i in seq_len(nrow(irma_species))) {
+        current_species <- irma_species[i, ]
+        log_info("IRMA ", current_species$acronym)
+        irma_file_path <- all_irma_files[grep(current_species$acronym, all_irma_files)]
+        irma_file <- readRDS(file.path(irma_dir, irma_file_path))
+        irma_file <- dplyr::mutate(irma_file, individ_year_tracked = case_when(
+            lubridate::month(timestamp) %in% c(6:12) ~ paste(individ_id, lubridate::year(timestamp), formatC(as.numeric(substr(lubridate::year(timestamp), 3, 4)) + 1, flag = "0", width = 2), sep = "_"),
+            lubridate::month(timestamp) %in% c(1:5) ~ paste(individ_id, lubridate::year(timestamp) - 1, formatC(as.numeric(substr(lubridate::year(timestamp), 3, 4)), flag = "0", width = 2), sep = "_")
+        ))
+
+        pos <- seatrackR::getPositions(sessionId = unique(irma_file$session_id), datatype = "GLS")
+        pos$year <- as.numeric(substr(pos$date_time, 1, 4))
+        pos$month <- as.numeric(substr(pos$date_time, 6, 7))
+        pos <- pos[pos$month %in% c(1:5, 9:12), ]
+        pos$winter <- paste(substr(pos$year, 3, 4),
+            substr(pos$year + 1, 3, 4),
+            sep = "/"
+        )
+        pos$winter[pos$month < 9] <- paste(substr(pos$year[pos$month < 9] - 1, 3, 4),
+            substr(pos$year[pos$month < 9], 3, 4),
+            sep = "/"
+        )
+
+        sub_pos <- pos[!duplicated(paste(pos$session_id, pos$year, pos$month)), ]
+
+        sub_pos$data <- "IRMA"
+
+        # sub_pos$id <- paste(sub_pos$individ_id, sub_pos$logger_id)
+        sub_pos <- merge(sub_pos, ind_sub[ind_sub$eventType == "Deployment", c("session_id", "status_age")], by = "session_id", all.x = TRUE)
+        sub_pos <- sub_pos[!duplicated(paste(sub_pos$session_id, sub_pos$winter)), c("colony", "winter", "species", "status_age", "data", "session_id")]
+        pos_sum <- rbind(pos_sum, sub_pos)
     }
 
     readr::write_excel_csv(pos_sum, file.path(system.file("shiny/web_metadata_app/data", package = "seatrackRtools"),
@@ -180,7 +229,7 @@ set_shiny_credentials_Renv <- function(account = NULL, token = NULL, secret = NU
     }
 
     if (Sys.getenv("SHINYAPPS_ACCOUNT", "") != account ||
-        Sys.getenv("SHINYAPPS_TOKEN", "") != token || Sys.getenv("SHINYAPPS_SECRET", "") != secret){
+        Sys.getenv("SHINYAPPS_TOKEN", "") != token || Sys.getenv("SHINYAPPS_SECRET", "") != secret) {
         environ_lines <- environ_lines[!grepl("SHINYAPPS_ACCOUNT", environ_lines, fixed = TRUE)]
         environ_lines <- environ_lines[!grepl("SHINYAPPS_TOKEN", environ_lines, fixed = TRUE)]
         environ_lines <- environ_lines[!grepl("SHINYAPPS_SECRET", environ_lines, fixed = TRUE)]
@@ -214,7 +263,7 @@ set_shiny_credentials_Renv <- function(account = NULL, token = NULL, secret = NU
 
 #' Get and prepare data for the SEATRACK metadata Shiny app.
 #'
-#' Convenience function calling `get_web_metadata_data` to get the latest data from the database and then pushing it to shinyapps.io. 
+#' Convenience function calling `get_web_metadata_data` to get the latest data from the database and then pushing it to shinyapps.io.
 #' Note that the default is to upload to the test app. Set test = FALSE to update the production app.
 #' @param test A boolean indicating whether to deploy the app in test mode. Defaults to TRUE, which deploys the app under the name "seatrack_shinyapp_TEST". If FALSE, the app will be deployed under the name "seatrack_shinyapp".
 #' @param account A string specifying the shinyapps.io account name. If NULL, it will attempt to retrieve the account name from the SHINYAPPS_ACCOUNT environment variable or prompt the user for input.

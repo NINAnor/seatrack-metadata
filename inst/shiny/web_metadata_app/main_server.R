@@ -43,6 +43,7 @@ main_server <- function(id) {
         data_req_summary <- dat_req_server("data_request", species_df)
         gls_summary <- pos_summary_server("gls_summary", pos, pos_data_last_modification, log, species_df, "GLS")
         gps_summary <- pos_summary_server("gps_summary", pos, pos_data_last_modification, log, species_df, "GPS")
+        irma_summary <- pos_summary_server("irma_summary", pos, pos_data_last_modification, log, species_df, "IRMA")
         age_summary <- age_summary_server("age_summary", ind, pos_data_last_modification, log, species_df, colony_cols)
         sex_summary <- sex_summary_server("sex_summary", ind, pos_data_last_modification, log, species_df, colony_cols)
     })

@@ -1,3 +1,17 @@
+push_startup_file_to_db <- function(file_path) {
+    if (!file.exists(file_path)) {
+        stop("The specified file does not exist.")
+    }
+
+    wb <- openxlsx2::wb_load(file_path)
+    startup <- tibble::tibble(wb$to_df())
+
+    # Can split off some of the tests/cleaning in the main prep function for here.
+
+    push_startup(startup)
+    push_shutdowns(startup[!is.na(startup$download_date), ])
+}
+
 #' Push master import file to database
 #'
 #' Function to push a master import file to the database. The function loads the master import file, prepares the data for database import, and then pushes the data to the database using the `push_db_import_collections` function.
@@ -67,7 +81,7 @@ push_db_import_collection <- function(db_import_collection, dry_run = FALSE) {
 push_startup <- function(startup, dry_run = FALSE) {
     # startup - check if startup already in database
     startup <- check_startups_db(startup)
-    check_startups_active_db(startup)
+    startup <- check_startups_active_db(startup)
 
     # Check that startups are in the same year as deployment - the db does this too.
     db_sessions <- dplyr::tbl(con, dbplyr::in_schema("loggers", "logging_session"))

@@ -549,8 +549,7 @@ get_irma_from_onedrive <- function(
             "Little auk", "Atlantic puffin", "Northern fulmar",
             "Black-legged kittiwake", "Common guillemot", "Brünnich's guillemot", "Leach's storm petrel"
         ),
-        latin_name = c("Alle_alle", "Fratercula_arctica", "Fulmarus_glacialis", "Rissa_tridactyla", "Uria_aalge", "Uria_lomvia", "Hydrobates_leucorhous"),
-        acronym <- c("ALALL", "FRARC", "FUGLA", "RITRI", "URAAL", "URLOM", "HYLEU")
+        latin_name = c("Alle_alle", "Fratercula_arctica", "Fulmarus_glacialis", "Rissa_tridactyla", "Uria_aalge", "Uria_lomvia", "Hydrobates_leucorhous"), acronym = c("ALALL", "FRARC", "FUGLA", "RITRI", "URAAL", "URLOM", "HYLEU")
     )
 
 
