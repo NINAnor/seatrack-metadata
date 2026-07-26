@@ -110,6 +110,31 @@ gls_process_species_colony <- function(
 
     log_info("Processing positions for species '", species, "' and colony '", colony, "'.")
     calibration_data <- openxlsx2::read_xlsx(calibration_data)
+    logger_years <- paste(calibration_data$logger_id, sapply(strsplit(calibration_data$total_years_tracked, "_"), function(x) {
+        x[2]
+    }), calibration_data$logger_model, sep = "_")
+    problem_dir <- file.path(the$sea_track_folder, "Database\\Imports_Logger data\\Raw logger data\\problems")
+    dir.create(problem_dir, recursive = TRUE, showWarnings = FALSE)
+
+    all_files <- list.files(import_directory, pattern = "*.lux|*.lig", recursive = TRUE, full.names = TRUE)
+    all_files_split <- strsplit(tools::file_path_sans_ext(basename(all_files)), "_")
+    file_info_list <- lapply(all_files_split, function(x) {
+        data.frame(logger_id = x[1], year_downloaded = x[2], id_year = paste(x[1], x[2], sep = "_"), id_year_model = paste(c(x[1], x[2], x[3:length(x)]), collapse = "_"))
+    })
+    file_info <- do.call(rbind, file_info_list)
+    file_info <- data.frame(filename = all_files, file_info)
+    # Find problem files and move them
+    for (x in unique(logger_years)) {
+        if (all(!is.na(calibration_data$problem[logger_years == x]) & calibration_data$problem[logger_years == x])) {
+            log_info("Moving problem file for logger/year/model: ", x, " to problems folder.")
+            # Find matching file in import director
+            current_file <- file_info[file_info$id_year_model == x, ]
+            # Move it to a new folder
+            new_path <- file.path(problem_dir, basename(current_file$filename))
+            file.rename(current_file$filename, new_path)
+        }
+    }
+
     calibration_data <- calibration_data[!is.na(calibration_data$sun_angle_start), ]
 
     filter_list <- seatrackRgls::read_filter_file(filter_path)

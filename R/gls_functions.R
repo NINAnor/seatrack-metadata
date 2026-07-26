@@ -172,7 +172,8 @@ gls_metadata <- function(import_directory, colony = NULL, species = NULL, id_yea
         posdata_filename = file_info$id_year_model,
         has_pos_data = has_pos_data,
         logger_download_type = download_types,
-        colony_names = colony, species_names = species
+        colony_names = colony, 
+        species_names = species
     )
     if (nrow(db_info) == 0) {
         return(data.frame())

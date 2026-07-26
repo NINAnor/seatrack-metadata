@@ -318,7 +318,7 @@ get_location_unprocessed <- function(location) {
         return(NULL)
     }
     unprocessed_files_list <- lapply(location_unprocessed_dir, function(unprocessed_dir) {
-        list.files(file.path(locations_path, unprocessed_dir), pattern = "^[^~].*\\.xls?x?m$", full.names = TRUE)
+        list.files(file.path(locations_path, unprocessed_dir), pattern = "^[^~].*\\.xls*", full.names = TRUE)
     })
     unprocessed_files <- unlist(unprocessed_files_list)
     if (length(unprocessed_files) == 0) {

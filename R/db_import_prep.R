@@ -28,7 +28,9 @@ prepare_master_sheet_for_db <- function(master_sheets) {
     metadata <- metadata[order(metadata$date), ]
 
     # Temporarily bring back scull until we fix the name
-    metadata <- dplyr::rename(metadata, scull = skull)
+    if("skull" %in% names(metadata)){
+        metadata <- dplyr::rename(metadata, scull = skull)
+    }
 
     metadata$ring_number <- as.character(metadata$ring_number)
 

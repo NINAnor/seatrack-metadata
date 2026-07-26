@@ -938,6 +938,43 @@
       "Repository": "CRAN",
       "Encoding": "UTF-8"
     },
+    "archive": {
+      "Package": "archive",
+      "Version": "1.1.13",
+      "Source": "Repository",
+      "Title": "Multi-Format Archive and Compression Support",
+      "Authors@R": "c( person(\"Jim\", \"Hester\", role = \"aut\", comment = c(ORCID = \"0000-0002-2739-7082\")), person(\"Gábor\", \"Csárdi\", , \"csardi.gabor@gmail.com\", role = c(\"aut\", \"cre\")), person(\"Ondrej\", \"Holy\", role = \"cph\", comment = \"archive_write_add_filter implementation\"), person(\"RStudio\", role = c(\"cph\", \"fnd\")) )",
+      "Description": "Bindings to 'libarchive' <http://www.libarchive.org> the Multi-format archive and compression library. Offers R connections and direct extraction for many archive formats including 'tar', 'ZIP', '7-zip', 'RAR', 'CAB' and compression formats including 'gzip', 'bzip2', 'compress', 'lzma' and 'xz'.",
+      "License": "MIT + file LICENSE",
+      "URL": "https://archive.r-lib.org/, https://github.com/r-lib/archive",
+      "BugReports": "https://github.com/r-lib/archive/issues",
+      "Depends": [
+        "R (>= 4.0.0)"
+      ],
+      "Imports": [
+        "cli",
+        "glue",
+        "rlang",
+        "tibble"
+      ],
+      "Suggests": [
+        "covr",
+        "testthat"
+      ],
+      "LinkingTo": [
+        "cli"
+      ],
+      "ByteCompile": "true",
+      "Encoding": "UTF-8",
+      "RoxygenNote": "7.2.1.9000",
+      "SystemRequirements": "libarchive: libarchive-dev (deb), libarchive-devel (rpm), libarchive (homebrew), libarchive_dev (csw)",
+      "Config/Needs/website": "tidyverse/tidytemplate",
+      "Biarch": "true",
+      "NeedsCompilation": "yes",
+      "Author": "Jim Hester [aut] (ORCID: <https://orcid.org/0000-0002-2739-7082>), Gábor Csárdi [aut, cre], Ondrej Holy [cph] (archive_write_add_filter implementation), RStudio [cph, fnd]",
+      "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
+      "Repository": "CRAN"
+    },
     "argosfilter": {
       "Package": "argosfilter",
       "Version": "0.70",
@@ -7431,6 +7468,30 @@
       "RemoteRef": "main",
       "RemoteSha": "57c20574b60f93aad1225bc02e5b648ef747481f",
       "Remotes": "SLisovski/GeoLight, distancetocoast=github::mdsumner/distancetocoast, GeoLocTools=github::bluegreen-labs/geoloctools"
+    },
+    "seatrackRgps": {
+      "Package": "seatrackRgps",
+      "Version": "0.0.0.93",
+      "Source": "Cellar",
+      "Title": "Utility functions for working with GPS within the seatrack project",
+      "Authors@R": "person(\"Julian\", \"Evans\", , \"julian.evans@nina.no\", role = c(\"aut\", \"cre\"))",
+      "Description": "Implements functions to assist reading and organising GPS data within the seatrack project.",
+      "License": "MIT + file LICENSE",
+      "Encoding": "UTF-8",
+      "Roxygen": "list(markdown = TRUE)",
+      "RoxygenNote": "7.3.3",
+      "Imports": [
+        "archive",
+        "stats"
+      ],
+      "Suggests": [
+        "testthat (>= 3.0.0)"
+      ],
+      "Config/testthat/edition": "3",
+      "URL": "https://ninanor.github.io/seatrack-gps/",
+      "NeedsCompilation": "no",
+      "Author": "Julian Evans [aut, cre]",
+      "Maintainer": "Julian Evans <julian.evans@nina.no>"
     },
     "sessioninfo": {
       "Package": "sessioninfo",

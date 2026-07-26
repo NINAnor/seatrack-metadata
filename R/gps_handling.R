@@ -1,4 +1,4 @@
-push_gps_data <- function() {
+push_gps_data <- function(chunk_size = 5000) {
     all_gps_data <- seatrackRgps::open_gps_data_files(file.path(the$sea_track_folder, "Database", "Import_Positions_GPS", "raw_data", "ALL"))
 
     # Some of this functionality could be moved to the library
@@ -26,43 +26,62 @@ push_gps_data <- function() {
     # remove remaining duplicates
     all_gps_data_nd <- all_gps_data_nd[which(!duplicated(names(all_gps_data_nd)))]
 
-    all_pos <- do.call(rbind, lapply(all_gps_data_nd, function(x) {
+    all_pos <- dplyr::bind_rows(lapply(all_gps_data_nd, function(x) {
         x$pos_data
     }))
 
-    all_immersion <- do.call(rbind, lapply(all_gps_data_nd, function(x) {
-        x$acc_immersion_data
-    }))
-
-    all_acc <- do.call(rbind, lapply(all_gps_data_nd, function(x) {
-        x$acc_data
-    }))
+    for(x in all_gps_data_nd){
 
 
-    names(all_pos) <- tolower(names(all_pos))
-    write_result <- dbWriteTable(con,
-        DBI::Id(schema = "imports", table = "gps_import"),
-        all_pos,
-        row.names = FALSE,
-        append = TRUE
-    )
+        positions <- x$pos_data
+        if (is.null(positions)) {
+            next()
+        }
+        names(positions) <- tolower(names(positions))
+        write_result <- DBI::dbWriteTable(con,
+            DBI::Id(schema = "imports", table = "gps_import"),
+            positions,
+            row.names = FALSE,
+            append = TRUE
+        )
+        immersion <- x$acc_immersion_data
 
-    names(all_immersion) <- tolower(names(all_immersion))
-    all_immersion <- dplyr::select(all_immersion, -dplyr::contains("acceleration"))
-    write_result <- dbWriteTable(con,
-        DBI::Id(schema = "imports", table = "gps_immersion_import"),
-        all_immersion,
-        row.names = FALSE,
-        append = TRUE
-    )
+        if (is.null(immersion)) {
+            next()
+        }
 
-    names(all_acc) <- tolower(names(all_acc))
-    write_result <- dbWriteTable(con,
-        DBI::Id(schema = "imports", table = "gps_acc_import"),
-        all_acc,
-        row.names = FALSE,
-        append = TRUE
-    )
+        names(immersion) <- tolower(names(immersion))
+        immersion <- dplyr::select(immersion, -dplyr::contains("acceleration"))
+        immersion_chunks <- split(immersion, (seq(nrow(immersion)) - 1) %/% chunk_size)
+        log_info(glue::glue("Writing {length(immersion_chunks)} chunks of immersion data to database"))
+        for (chunk in immersion_chunks) {
+            log_info(glue::glue("Writing chunk of {nrow(chunk)} rows to database"))
+            write_result <- DBI::dbWriteTable(con,
+                DBI::Id(schema = "imports", table = "gps_immersion_import"),
+                chunk,
+                row.names = FALSE,
+                append = TRUE
+            )
+        }
+
+        acceleration <- x$acceleration
+        if (is.null(acceleration)) {
+            next()
+        }
+        names(acceleration) <- tolower(names(acceleration))
+        acceleration_chunks <- split(acceleration, (seq(nrow(acceleration)) - 1) %/% chunk_size)
+        log_info(glue::glue("Writing {length(acceleration_chunks)} chunks of acceleration data to database"))
+        for (chunk in acceleration_chunks) {
+            log_info(glue::glue("Writing chunk of {nrow(chunk)} rows to database"))
+            write_result <- DBI::dbWriteTable(con,
+                DBI::Id(schema = "imports", table = "gps_acc_import"),
+                chunk,
+                row.names = FALSE,
+                append = TRUE
+            )
+        }
+
+    }
 
     gps_db <- dplyr::tbl(con, dbplyr::in_schema("positions", "gps"))
     # Check which deployment rows did and didn't make it into the database
@@ -78,8 +97,11 @@ push_gps_data <- function() {
 
     missing_rows <- dplyr::anti_join(temp_pos_table, gps_db, by = dplyr::join_by(tag_id == logger_id_str, "date_time")) %>%
         dplyr::group_by(tag_id) %>%
-        dplyr::summarise(n_mising = n()) %>%
+        dplyr::summarise(n_missing = n()) %>%
         dplyr::collect()
+total_rows <- dplyr::group_by(all_pos, tag_id) %>% dplyr::summarise(n_expected = n())
+missing_rows <- dplyr::left_join(missing_rows, total_rows, by = "tag_id")
+missing_rows$completely_missing <- missing_rows$n_missing == missing_rows$n_expected
     if (nrow(missing_rows) > 0) {
         log_warn("Data import for the following logger IDs was incomplete", ":\n", paste(capture.output(print(missing_rows, n = nrow(missing_rows)))[c(-1, -3)], collapse = "\n"))
     }

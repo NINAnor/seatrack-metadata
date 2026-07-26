@@ -4,15 +4,11 @@ connect_db_ui <- function(id) {
   actionButton(ns("login"), "Login to database")
 }
 
-connect_db_server <- function(id, busy, test = FALSE, app_settings) {
+connect_db_server <- function(id, busy = FALSE, test = FALSE, on_success = function() {}, on_fail = function(exception) {}, app_settings = list()) {
   ns <- NS(id)
   moduleServer(id, function(input, output, session) {
     observeEvent(busy(), {
-      if (busy()) {
-        shinyjs::disable("login")
-      } else {
-        shinyjs::enable("login")
-      }
+      on_busy(busy())
     })
 
     # app_settings_list <- app_settings()
@@ -55,15 +51,14 @@ connect_db_server <- function(id, busy, test = FALSE, app_settings) {
           } else {
             seatrackR::connectSeatrack(input$username, input$password, host = "localhost", "seatrack-test")
           }
+          removeModal()
 
-          log_success("Succesfully connected")
+          on_success()
         },
         error = function(e) {
-          log_error(paste("ERROR", e), namespace = "error")
+          on_fail(e)
         }
       )
-
-      removeModal()
     }) |>
       bindEvent(input$connect)
   })

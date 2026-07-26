@@ -54,7 +54,20 @@ main_server <- function(id) {
         manager_loggers <- manage_logger_server("manage_loggers", busy, all_locations, unsaved, user_full_name)
         manage_metadata <- manage_metadata_server("manage_metadata", busy, all_locations, unsaved)
         manage_db_upload <- manage_db_upload_server("manage_db_upload", busy, all_locations, unsaved)
-        connect_db <- connect_db_server("connect_db", busy, getShinyOption("test", FALSE), app_settings)
+        connect_db <- connect_db_server("connect_db", busy, getShinyOption("test", FALSE),
+            on_busy = function(is_busy) {
+                if (is_busy) {
+                    shinyjs::disable("login")
+                } else {
+                    shinyjs::enable("login")
+                }
+            },
+            on_success = function() {
+                log_success("Succesfully connected")
+            }, on_fail = function(e) {
+                log_error(paste("ERROR", e), namespace = "error")
+            }, app_settings
+        )
         # sea_track_path <- reactiveVal()
         # Folder selector
         folder_select <- folder_selector_server("folder", busy, all_locations, app_settings)

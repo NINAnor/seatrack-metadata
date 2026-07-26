@@ -414,9 +414,9 @@ gls_check_calibration <- function() {
             if (nrow(existing_export_data) == 0) {
                 next
             }
-            n_valid <- sum(!existing_export_data$problem, na.rm = TRUE)
+            n_valid <- sum(!existing_export_data$problem | is.na(existing_export_data$problem), na.rm = TRUE)
             total <- nrow(existing_export_data)
-            n_calibrated <- sum(!is.na(existing_export_data$sun_angle_start) & !existing_export_data$problem, na.rm = TRUE)
+            n_calibrated <- sum(!is.na(existing_export_data$sun_angle_start) & (!existing_export_data$problem | is.na(existing_export_data$problem)), na.rm = TRUE)
             n_uncalibrated <- sum(is.na(existing_export_data$sun_angle_start) & !existing_export_data$problem, na.rm = TRUE)
             calibration_summary <- data.frame(
                 species = current_species,
